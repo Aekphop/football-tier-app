@@ -1,0 +1,294 @@
+{
+  "settings": {
+    "id": "global_settings",
+    "title": "Football Skills Tier List 2026",
+    "description": "ระบบโหวตประเมินทักษะฟุตบอล 7 หมวด 36 ข้อย่อย และจัด Tier อัตโนมัติ",
+    "votingStartTime": null,
+    "votingEndTime": null,
+    "isLocked": false,
+    "preventSelfVoting": true,
+    "allowEditVote": false,
+    "votingPasscode": "1234",
+    "requireApproval": true,
+    "approvedUsers": [
+      "xekphphbrrnsa@gmail.com",
+      "kla@gmail.com",
+      "toe@gmail.com",
+      "link@gmail.com",
+      "erd@gmail.com",
+      "knot@gmail.com",
+      "book@gmail.com",
+      "q@gmail.com",
+      "wen@gmail.com",
+      "prem@gmail.com",
+      "pleum@gmail.com",
+      "toon@gmail.com",
+      "poon@gmail.com",
+      "name@gmail.com",
+      "kla_gk@gmail.com"
+    ],
+    "adminEmails": [
+      "xekphphbrrnsa@gmail.com",
+      "admin@gmail.com"
+    ],
+    "lastUpdated": "2026-09-06T05:05:30.141Z",
+    "votingRestrictions": {
+      "kla_gk@gmail.com": [
+        "cand_1"
+      ],
+      "kla@gmail.com": [
+        "cand_2"
+      ],
+      "toe@gmail.com": [
+        "cand_3"
+      ],
+      "link@gmail.com": [
+        "cand_4"
+      ],
+      "erd@gmail.com": [
+        "cand_5"
+      ],
+      "knot@gmail.com": [
+        "cand_6"
+      ],
+      "book@gmail.com": [
+        "cand_7"
+      ],
+      "q@gmail.com": [
+        "cand_8"
+      ],
+      "wen@gmail.com": [
+        "cand_9"
+      ],
+      "prem@gmail.com": [
+        "cand_10"
+      ],
+      "pleum@gmail.com": [
+        "cand_11"
+      ],
+      "toon@gmail.com": [
+        "cand_12"
+      ],
+      "poon@gmail.com": [
+        "cand_13"
+      ],
+      "name@gmail.com": [
+        "cand_14"
+      ]
+    },
+    "bannedUsers": [],
+    "customization": {
+      "headerTitle": "kaka",
+      "headerSubtitle": "ประเมินทักษะนักเตะ 7 หมวด 36 ข้อย่อย",
+      "themeColor": "rose",
+      "customAnnouncement": "",
+      "bannerImageUrl": ""
+    }
+  },
+  "candidates": [
+    {
+      "id": "cand_1",
+      "name": "กล้า (ประตู)",
+      "nickname": "กล้า (GK)",
+      "number": 1,
+      "position": "Goalkeeper (GK)",
+      "team": "Squad",
+      "userEmail": "kla_gk@gmail.com",
+      "avatarUrl": "/avatars/kla_gk.png",
+      "createdAt": "2026-08-30T00:00:00.000Z"
+    },
+    {
+      "id": "cand_2",
+      "name": "กล้า",
+      "nickname": "กล้า",
+      "number": 2,
+      "position": "Player",
+      "team": "Squad",
+      "userEmail": "kla@gmail.com",
+      "avatarUrl": "/avatars/kla.jpg",
+      "createdAt": "2026-08-30T00:00:00.000Z"
+    },
+    {
+      "id": "cand_3",
+      "name": "โต้",
+      "nickname": "โต้",
+      "number": 3,
+      "position": "Player",
+      "team": "Squad",
+      "userEmail": "toe@gmail.com",
+      "avatarUrl": "/avatars/toe.png",
+      "createdAt": "2026-08-30T00:00:00.000Z"
+    },
+    {
+      "id": "cand_4",
+      "name": "ลิ้ง",
+      "nickname": "ลิ้ง",
+      "number": 4,
+      "position": "Player",
+      "team": "Squad",
+      "userEmail": "link@gmail.com",
+      "avatarUrl": "/avatars/link.png",
+      "createdAt": "2026-08-30T00:00:00.000Z"
+    },
+    {
+      "id": "cand_5",
+      "name": "เอิด",
+      "nickname": "เอิด",
+      "number": 5,
+      "position": "Player",
+      "team": "Squad",
+      "userEmail": "erd@gmail.com",
+      "avatarUrl": "/avatars/erd.png",
+      "createdAt": "2026-08-30T00:00:00.000Z"
+    },
+    {
+      "id": "cand_6",
+      "name": "น็อต",
+      "nickname": "น็อต",
+      "number": 6,
+      "position": "Player",
+      "team": "Squad",
+      "userEmail": "knot@gmail.com",
+      "avatarUrl": "/avatars/knot.png",
+      "createdAt": "2026-08-30T00:00:00.000Z"
+    },
+    {
+      "id": "cand_7",
+      "name": "บุ๊ค",
+      "nickname": "บุ๊ค",
+      "number": 7,
+      "position": "Player",
+      "team": "Squad",
+      "userEmail": "book@gmail.com",
+      "avatarUrl": "/avatars/book.png",
+      "createdAt": "2026-08-30T00:00:00.000Z"
+    },
+    {
+      "id": "cand_8",
+      "name": "คิว",
+      "nickname": "คิว",
+      "number": 8,
+      "position": "Player",
+      "team": "Squad",
+      "userEmail": "q@gmail.com",
+      "avatarUrl": "/avatars/q.png",
+      "createdAt": "2026-08-30T00:00:00.000Z"
+    },
+    {
+      "id": "cand_9",
+      "name": "เว่น",
+      "nickname": "เว่น",
+      "number": 9,
+      "position": "Player",
+      "team": "Squad",
+      "userEmail": "wen@gmail.com",
+      "avatarUrl": "/avatars/wen.webp",
+      "createdAt": "2026-08-30T00:00:00.000Z"
+    },
+    {
+      "id": "cand_10",
+      "name": "เปรม",
+      "nickname": "เปรม",
+      "number": 10,
+      "position": "Player",
+      "team": "Squad",
+      "userEmail": "prem@gmail.com",
+      "avatarUrl": "/avatars/prem.png",
+      "createdAt": "2026-08-30T00:00:00.000Z"
+    },
+    {
+      "id": "cand_11",
+      "name": "ปลื้ม",
+      "nickname": "ปลื้ม",
+      "number": 11,
+      "position": "Player",
+      "team": "Squad",
+      "userEmail": "pleum@gmail.com",
+      "avatarUrl": "/avatars/pleum.webp",
+      "createdAt": "2026-08-30T00:00:00.000Z"
+    },
+    {
+      "id": "cand_12",
+      "name": "ตูน",
+      "nickname": "ตูน",
+      "number": 12,
+      "position": "Player",
+      "team": "Squad",
+      "userEmail": "toon@gmail.com",
+      "avatarUrl": "/avatars/toon.jpg",
+      "createdAt": "2026-08-30T00:00:00.000Z"
+    },
+    {
+      "id": "cand_13",
+      "name": "ปูน",
+      "nickname": "ปูน",
+      "number": 13,
+      "position": "Player",
+      "team": "Squad",
+      "userEmail": "poon@gmail.com",
+      "avatarUrl": "/avatars/poon.png",
+      "createdAt": "2026-08-30T00:00:00.000Z"
+    },
+    {
+      "id": "cand_14",
+      "name": "เนม",
+      "nickname": "เนม",
+      "number": 14,
+      "position": "Player",
+      "team": "Squad",
+      "userEmail": "name@gmail.com",
+      "avatarUrl": "/avatars/name.png",
+      "createdAt": "2026-08-30T00:00:00.000Z"
+    }
+  ],
+  "votes": [
+    {
+      "id": "vote_1788669846731_le91",
+      "candidateId": "cand_3",
+      "userId": "u_xekphphbrrnsa_gmail_com",
+      "userEmail": "xekphphbrrnsa@gmail.com",
+      "scores": {
+        "c1_first_touch": 4,
+        "c1_passing": 4,
+        "c1_ball_control": 3,
+        "c1_dribbling": 3,
+        "c1_shooting": 4,
+        "c1_heading": 3,
+        "c2_speed": 3,
+        "c2_stamina": 4,
+        "c2_strength": 3,
+        "c2_agility": 3,
+        "c2_balance": 3,
+        "c2_explosive_power": 3,
+        "c3_vision": 4,
+        "c3_decision_making": 3,
+        "c3_positioning": 3,
+        "c3_tactical_awareness": 3,
+        "c3_interceptions": 4,
+        "c3_transition": 4,
+        "c4_confidence": 4,
+        "c4_focus": 4,
+        "c4_composure": 3,
+        "c4_discipline": 3,
+        "c4_leadership": 4,
+        "c4_work_ethic": 5,
+        "c5_communication": 4,
+        "c5_teamwork": 4,
+        "c5_supporting": 4,
+        "c5_pressing": 3,
+        "c5_fair_play": 5,
+        "c6_overall_impact": 4,
+        "c6_key_pass": 4,
+        "c6_goals": 3,
+        "c6_defensive_contrib": 4,
+        "c6_consistency": 4,
+        "c7_dominant_foot": 4,
+        "c7_weaker_foot": 4
+      },
+      "isFinal": true,
+      "submittedAt": "2026-09-06T04:44:06.731Z",
+      "updatedAt": "2026-09-06T04:44:06.731Z"
+    }
+  ],
+  "users": []
+}
