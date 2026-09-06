@@ -4,6 +4,8 @@ export interface User {
   id: string;
   email: string;
   name: string;
+  nickname?: string;
+  number?: number; // เบอร์เสื้อ (ห้ามซ้ำ)
   image?: string;
   role: UserRole;
   isApproved?: boolean;
@@ -72,7 +74,7 @@ export interface SystemSettings {
   votingPasscode: string;
   requireApproval: boolean;
   approvedUsers: string[];
-  bannedUsers: string[]; // รายชื่ออีเมลที่ถูกแบน
+  bannedUsers: string[];
   adminEmails: string[];
   votingRestrictions: Record<string, string[]>;
   customization: WebCustomization;

@@ -4,6 +4,9 @@ import React, { useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useAuth } from "@/lib/auth-context";
+import UserProfileModal from "@/components/UserProfileModal";
+import PlayerCompareModal from "@/components/PlayerCompareModal";
+import { CandidateTierResult } from "@/types";
 import {
   Trophy,
   Vote,
@@ -17,15 +20,18 @@ import {
   Radio,
   KeyRound,
   Mail,
+  User,
+  Swords,
+  Edit3,
 } from "lucide-react";
 
 export default function Navbar() {
   const pathname = usePathname();
-  const { user, role, isAdmin, loginWithDev, logout } = useAuth();
-  const [showSwitchModal, setShowSwitchModal] = useState(false);
-  const [gmailInput, setGmailInput] = useState("");
-  const [userName, setUserName] = useState("");
-  const [errorMessage, setErrorMessage] = useState("");
+  const { user, role, isAdmin, logout } = useAuth();
+
+  const [showProfileModal, setShowProfileModal] = useState(false);
+  const [showCompareModal, setShowCompareModal] = useState(false);
+  const [allPlayersForCompare, setAllPlayersForCompare] = useState<CandidateTierResult[]>([]);
 
   const navLinks = [
     { href: "/", label: "หน้าแรก", icon: Radio },
@@ -36,31 +42,17 @@ export default function Navbar() {
       : []),
   ];
 
-  const handleAdminSwitch = () => {
-    loginWithDev("xekphphbrrnsa@gmail.com", "แอดมิน", "ADMIN");
-    setShowSwitchModal(false);
-  };
-
-  const handleGmailSwitch = (e: React.FormEvent) => {
-    e.preventDefault();
-    setErrorMessage("");
-
-    let email = gmailInput.trim().toLowerCase();
-    if (!email) {
-      setErrorMessage("กรุณาระบุบัญชี Gmail");
-      return;
+  const handleOpenCompare = async () => {
+    try {
+      const res = await fetch("/api/tier-list");
+      const json = await res.json();
+      if (json.success && json.data?.rankings) {
+        setAllPlayersForCompare(json.data.rankings);
+        setShowCompareModal(true);
+      }
+    } catch (e) {
+      console.error(e);
     }
-
-    if (!email.includes("@")) {
-      email = `${email}@gmail.com`;
-    } else if (!email.endsWith("@gmail.com")) {
-      setErrorMessage("กรุณาใช้อีเมลที่ลงท้ายด้วย @gmail.com เท่านั้น");
-      return;
-    }
-
-    const name = userName.trim() || email.split("@")[0];
-    loginWithDev(email, name, "USER");
-    setShowSwitchModal(false);
   };
 
   return (
@@ -105,22 +97,34 @@ export default function Navbar() {
                   </Link>
                 );
               })}
+
+              {/* Compare Spider Chart Button */}
+              <button
+                onClick={handleOpenCompare}
+                className="flex items-center gap-2 px-3.5 py-2 rounded-lg text-sm font-medium text-amber-300 hover:text-amber-200 hover:bg-amber-500/10 transition-all border border-amber-500/30"
+              >
+                <Swords className="w-4 h-4 text-amber-400" />
+                <span>เปรียบเทียบผู้เล่น 2 คน</span>
+              </button>
             </nav>
 
-            {/* User Account / Role Switcher */}
+            {/* User Profile / Menu */}
             <div className="flex items-center gap-3">
               {user ? (
                 <div className="flex items-center gap-2">
                   <button
-                    onClick={() => setShowSwitchModal(true)}
+                    onClick={() => setShowProfileModal(true)}
                     className="flex items-center gap-2.5 px-3 py-1.5 rounded-xl bg-slate-800/80 hover:bg-slate-700/80 border border-slate-700/70 transition-all text-left group"
-                    title="สลับบัญชีผู้ใช้"
+                    title="แก้ไขโปรไฟล์ส่วนตัว"
                   >
                     <div className="relative">
                       {/* eslint-disable-next-line @next/next/no-img-element */}
                       <img
                         src={user.image || `https://api.dicebear.com/7.x/personas/svg?seed=${encodeURIComponent(user.email)}`}
                         alt={user.name}
+                        onError={(e) => {
+                          (e.target as HTMLImageElement).src = `https://api.dicebear.com/7.x/personas/svg?seed=${encodeURIComponent(user.email)}`;
+                        }}
                         className="w-7 h-7 rounded-lg object-cover ring-1 ring-slate-600"
                       />
                       <span
@@ -132,7 +136,12 @@ export default function Navbar() {
                     <div className="hidden sm:block">
                       <div className="text-xs font-semibold text-white leading-tight flex items-center gap-1.5">
                         <span className="truncate max-w-[120px]">{user.name}</span>
-                        <ChevronDown className="w-3 h-3 text-slate-400 group-hover:text-white transition-colors" />
+                        {user.number && (
+                          <span className="text-[10px] px-1.5 py-0.2 rounded bg-amber-500/20 text-amber-300 font-extrabold border border-amber-500/30">
+                            #{user.number}
+                          </span>
+                        )}
+                        <Edit3 className="w-3 h-3 text-slate-400 group-hover:text-white transition-colors" />
                       </div>
                       <div className="text-[10px] leading-tight">
                         {isAdmin ? (
@@ -147,16 +156,16 @@ export default function Navbar() {
                       </div>
                     </div>
                   </button>
+
+                  <button
+                    onClick={logout}
+                    className="p-2 rounded-xl bg-slate-800/80 hover:bg-red-500/20 text-slate-400 hover:text-red-400 transition-colors"
+                    title="ออกจากระบบ"
+                  >
+                    <LogOut className="w-4 h-4" />
+                  </button>
                 </div>
-              ) : (
-                <Link
-                  href="/login"
-                  className="flex items-center gap-2 px-4 py-2 rounded-xl bg-gradient-to-r from-rose-600 to-amber-600 hover:from-rose-500 hover:to-amber-500 text-white text-xs sm:text-sm font-semibold shadow-lg shadow-rose-600/30 transition-all"
-                >
-                  <Sparkles className="w-4 h-4" />
-                  <span>เข้าสู่ระบบ</span>
-                </Link>
-              )}
+              ) : null}
             </div>
           </div>
         </div>
@@ -181,98 +190,28 @@ export default function Navbar() {
               </Link>
             );
           })}
+
+          <button
+            onClick={handleOpenCompare}
+            className="flex flex-col items-center gap-0.5 py-1 px-3 rounded-lg text-xs font-medium text-amber-400"
+          >
+            <Swords className="w-4 h-4" />
+            <span className="text-[11px]">เปรียบเทียบ</span>
+          </button>
         </div>
       </header>
 
-      {/* Account Switcher Modal */}
-      {showSwitchModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm animate-in fade-in duration-150">
-          <div className="bg-slate-900 border border-slate-700/80 rounded-3xl max-w-md w-full p-6 shadow-2xl space-y-4">
-            <div className="flex items-center justify-between pb-3 border-b border-slate-800">
-              <div className="flex items-center gap-2.5">
-                <div className="p-2 rounded-xl bg-amber-500/20 text-amber-400 border border-amber-500/30">
-                  <ShieldCheck className="w-5 h-5" />
-                </div>
-                <div>
-                  <h3 className="font-bold text-white text-base">สลับประเภทบัญชีผู้ใช้</h3>
-                  <p className="text-xs text-slate-400">เลือกบัญชีแอดมิน หรือลงชื่อเข้าใช้ด้วย Gmail</p>
-                </div>
-              </div>
-              <button
-                onClick={() => setShowSwitchModal(false)}
-                className="text-slate-400 hover:text-white text-xl font-bold p-1 rounded-lg hover:bg-slate-800"
-              >
-                ✕
-              </button>
-            </div>
+      {/* User Profile Modal */}
+      {showProfileModal && (
+        <UserProfileModal onClose={() => setShowProfileModal(false)} />
+      )}
 
-            <div className="space-y-3">
-              {/* Option 1: Admin */}
-              <button
-                onClick={handleAdminSwitch}
-                className="w-full flex items-center justify-between p-3.5 rounded-2xl bg-amber-500/10 border border-amber-500/40 hover:bg-amber-500/20 text-left transition-all"
-              >
-                <div className="flex items-center gap-3">
-                  <div className="w-9 h-9 rounded-xl bg-amber-500/20 flex items-center justify-center text-base">
-                    👑
-                  </div>
-                  <div>
-                    <div className="text-sm font-bold text-white">สลับเป็น บัญชีแอดมิน</div>
-                    <div className="text-[11px] text-amber-300 font-medium">เข้าใช้งานในฐานะผู้ดูแลระบบ</div>
-                  </div>
-                </div>
-              </button>
-
-              {/* Option 2: Gmail Login */}
-              <form onSubmit={handleGmailSwitch} className="p-3.5 rounded-2xl bg-slate-950/80 border border-slate-800 space-y-2.5">
-                <div className="text-xs font-bold text-slate-200 flex items-center gap-1.5">
-                  <Mail className="w-3.5 h-3.5 text-emerald-400" />
-                  <span>เข้าสู่ระบบด้วย Gmail บัญชีทั่วไป:</span>
-                </div>
-
-                <input
-                  type="text"
-                  placeholder="example@gmail.com"
-                  value={gmailInput}
-                  onChange={(e) => setGmailInput(e.target.value)}
-                  className="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-emerald-500"
-                />
-
-                <input
-                  type="text"
-                  placeholder="ชื่อของคุณ"
-                  value={userName}
-                  onChange={(e) => setUserName(e.target.value)}
-                  className="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-emerald-500"
-                />
-
-                {errorMessage && (
-                  <p className="text-[11px] text-red-400 font-semibold">{errorMessage}</p>
-                )}
-
-                <button
-                  type="submit"
-                  className="w-full py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold shadow-md shadow-emerald-600/20"
-                >
-                  เข้าสู่ระบบด้วย Gmail นี้
-                </button>
-              </form>
-            </div>
-
-            {user && (
-              <button
-                onClick={() => {
-                  logout();
-                  setShowSwitchModal(false);
-                }}
-                className="w-full flex items-center justify-center gap-2 py-2 text-xs text-red-400 hover:text-red-300 hover:bg-red-500/10 rounded-xl transition-colors pt-2 border-t border-slate-800"
-              >
-                <LogOut className="w-3.5 h-3.5" />
-                <span>ออกจากระบบ</span>
-              </button>
-            )}
-          </div>
-        </div>
+      {/* Player Compare Radar Modal */}
+      {showCompareModal && (
+        <PlayerCompareModal
+          allPlayers={allPlayersForCompare}
+          onClose={() => setShowCompareModal(false)}
+        />
       )}
     </>
   );

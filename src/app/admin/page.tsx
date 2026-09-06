@@ -7,6 +7,7 @@ import { Candidate, SystemSettings, User, VoteRecord, WebCustomization } from "@
 import { useAuth } from "@/lib/auth-context";
 import AdminCandidateModal from "@/components/AdminCandidateModal";
 import { formatThaiDateTime } from "@/components/CountdownTimer";
+import { ALL_SUB_CRITERIA } from "@/data/criteria";
 import {
   Settings,
   Clock,
@@ -35,6 +36,9 @@ import {
   Ban,
   RefreshCw,
   Flame,
+  Eye,
+  Search,
+  FileSpreadsheet,
 } from "lucide-react";
 
 export default function AdminPage() {
@@ -57,7 +61,7 @@ export default function AdminPage() {
   const [votingPasscode, setVotingPasscode] = useState("1234");
   const [requireApproval, setRequireApproval] = useState(true);
 
-  // Web Customization states (ข้อความ/สี/รูปภาพ)
+  // Web Customization states
   const [customization, setCustomization] = useState<WebCustomization>({
     headerTitle: "Football Skills Tier List 2026",
     headerSubtitle: "ประเมินทักษะนักเตะ 7 หมวด 36 ข้อย่อย จัด Tier อัตโนมัติ",
@@ -67,10 +71,14 @@ export default function AdminPage() {
     customAnnouncement: "",
   });
 
-  // Voting Restrictions Matrix (ใครห้ามโหวตใคร)
+  // Voting Restrictions Matrix
   const [restrictions, setRestrictions] = useState<Record<string, string[]>>({});
   const [selectedVoterEmail, setSelectedVoterEmail] = useState<string>("");
   const [restrictionSuccessMessage, setRestrictionSuccessMessage] = useState("");
+
+  // Audit filter state
+  const [auditSearch, setAuditSearch] = useState("");
+  const [expandedVoteId, setExpandedVoteId] = useState<string | null>(null);
 
   // UI modal states
   const [editingCandidate, setEditingCandidate] = useState<Candidate | null>(null);
@@ -210,7 +218,6 @@ export default function AdminPage() {
     }
   };
 
-  // Toggle Account Banning (ระบบแบนบัญชี)
   const handleToggleUserBan = async (email: string, currentBanned: boolean) => {
     if (!confirm(`คุณต้องการ ${currentBanned ? "ปลดแบน" : "แบนบัญชี"} ${email} หรือไม่?`)) return;
     try {
@@ -232,7 +239,6 @@ export default function AdminPage() {
     }
   };
 
-  // Toggle Restriction for selected voter on a candidate
   const handleToggleRestriction = (candidateId: string) => {
     if (!selectedVoterEmail) return;
     const cleanVoter = selectedVoterEmail.toLowerCase().trim();
@@ -296,9 +302,8 @@ export default function AdminPage() {
     }
   };
 
-  // Hard Reset: เคลียร์ข้อมูลรีเซ็ตเว็บกลับค่าเริ่มต้น
   const handleHardReset = async () => {
-    if (!confirm("⚠️ คำเตือนสุดลบ!: คุณต้องการรีเซ็ตระบบทั้งหมดกลับไปเป็นค่าเริ่มต้นและล้างข้อมูลเก่าทิ้งทั้งหมดหรือไม่?")) return;
+    if (!confirm("⚠️ คำเตือน: คุณต้องการรีเซ็ตระบบทั้งหมดกลับไปเป็นค่าเริ่มต้นและล้างข้อมูลเก่าทิ้งทั้งหมดหรือไม่?")) return;
     try {
       const res = await fetch("/api/admin/reset", { method: "POST" });
       const data = await res.json();
@@ -334,6 +339,17 @@ export default function AdminPage() {
 
   const selectedVoterForbidden = restrictions[selectedVoterEmail?.toLowerCase().trim()] || [];
 
+  const filteredVotes = votes.filter((v) => {
+    const cand = candidates.find((c) => c.id === v.candidateId);
+    const search = auditSearch.toLowerCase().trim();
+    if (!search) return true;
+    return (
+      v.userEmail.toLowerCase().includes(search) ||
+      (cand && cand.name.toLowerCase().includes(search)) ||
+      (cand && cand.nickname && cand.nickname.toLowerCase().includes(search))
+    );
+  });
+
   return (
     <div className="space-y-8 pb-20">
       {/* Admin Title Banner */}
@@ -350,7 +366,7 @@ export default function AdminPage() {
               </span>
             </div>
             <p className="text-xs text-slate-400">
-              ปรับแต่งหน้าเว็บ (ข้อความ/สี/รูปภาพ), ตั้งเวลากติกา, รหัสผ่านโหวต, ใครห้ามโหวตใคร, แบนแอคเคาน์, และรีเซ็ตระบบ
+              ปรับแต่งหน้าเว็บ, ตั้งเวลากติกา, รหัสผ่านโหวต, ใครห้ามโหวตใคร, ตรวจสอบผลโหวตรายบุคคล, แบนแอคเคาน์, และรีเซ็ตระบบ
             </p>
           </div>
         </div>
@@ -369,7 +385,7 @@ export default function AdminPage() {
         </button>
       </div>
 
-      {/* Section 1: Web App Customization (ข้อความ / สี / รูปภาพ) */}
+      {/* Section 1: Web App Customization */}
       <form onSubmit={handleSaveSettings} className="glass-panel p-6 rounded-3xl border border-indigo-500/30 bg-gradient-to-b from-indigo-500/5 to-slate-900/40 space-y-6">
         <div className="flex items-center justify-between pb-3 border-b border-slate-800">
           <div className="flex items-center gap-2.5">
@@ -439,59 +455,6 @@ export default function AdminPage() {
           </div>
         </div>
 
-        {/* Image Assets Management (เพิ่ม / ลบ รูปภาพ) */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-2 border-t border-slate-800">
-          <div className="space-y-1.5">
-            <label className="text-xs font-semibold text-slate-300 flex items-center gap-1.5">
-              <ImageIcon className="w-3.5 h-3.5 text-indigo-400" />
-              <span>ลิงก์รูปภาพโลโก้เว็บ (Logo Image URL)</span>
-            </label>
-            <div className="flex gap-2">
-              <input
-                type="url"
-                placeholder="https://..."
-                value={customization.logoUrl || ""}
-                onChange={(e) => setCustomization({ ...customization, logoUrl: e.target.value })}
-                className="flex-1 bg-slate-950 border border-slate-700 rounded-xl px-3.5 py-2 text-xs text-white focus:outline-none focus:border-indigo-500"
-              />
-              {customization.logoUrl && (
-                <button
-                  type="button"
-                  onClick={() => setCustomization({ ...customization, logoUrl: "" })}
-                  className="px-2.5 py-1 bg-red-500/20 text-red-400 hover:bg-red-500/30 rounded-xl text-xs"
-                >
-                  ลบรูป
-                </button>
-              )}
-            </div>
-          </div>
-
-          <div className="space-y-1.5">
-            <label className="text-xs font-semibold text-slate-300 flex items-center gap-1.5">
-              <ImageIcon className="w-3.5 h-3.5 text-indigo-400" />
-              <span>ลิงก์รูปภาพแบนเนอร์ส่วนหัว (Banner Image URL)</span>
-            </label>
-            <div className="flex gap-2">
-              <input
-                type="url"
-                placeholder="https://..."
-                value={customization.bannerImageUrl || ""}
-                onChange={(e) => setCustomization({ ...customization, bannerImageUrl: e.target.value })}
-                className="flex-1 bg-slate-950 border border-slate-700 rounded-xl px-3.5 py-2 text-xs text-white focus:outline-none focus:border-indigo-500"
-              />
-              {customization.bannerImageUrl && (
-                <button
-                  type="button"
-                  onClick={() => setCustomization({ ...customization, bannerImageUrl: "" })}
-                  className="px-2.5 py-1 bg-red-500/20 text-red-400 hover:bg-red-500/30 rounded-xl text-xs"
-                >
-                  ลบรูป
-                </button>
-              )}
-            </div>
-          </div>
-        </div>
-
         <div className="flex justify-end pt-2">
           <button
             type="submit"
@@ -504,12 +467,129 @@ export default function AdminPage() {
         </div>
       </form>
 
-      {/* Section 2: Voting Passcode Settings */}
+      {/* Section 2: Audit Voting Insights (แอดมินดูว่าใครโหวตให้ใครเท่าไหร่) */}
+      <div className="glass-panel p-6 rounded-3xl border border-amber-500/30 bg-gradient-to-b from-amber-500/5 to-slate-900/40 space-y-4">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-slate-800">
+          <div className="flex items-center gap-2.5">
+            <div className="p-2 rounded-xl bg-amber-500/20 text-amber-400 border border-amber-500/30">
+              <FileSpreadsheet className="w-5 h-5" />
+            </div>
+            <div>
+              <h2 className="text-base sm:text-lg font-bold text-white">
+                2. ตรวจสอบผลโหวตรายบุคคล (Audit - เฉพาะแอดมินดูได้)
+              </h2>
+              <p className="text-xs text-slate-400">
+                ตรวจสอบว่าใครส่งโหวตให้ผู้เล่นคนไหน ให้คะแนนเท่าไหร่ รายละเอียดทั้ง 36 ข้อ
+              </p>
+            </div>
+          </div>
+
+          <div className="relative">
+            <Search className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
+            <input
+              type="text"
+              placeholder="ค้นหาชื่อผู้โหวต/ผู้เล่น..."
+              value={auditSearch}
+              onChange={(e) => setAuditSearch(e.target.value)}
+              className="bg-slate-950 border border-slate-700 rounded-xl pl-9 pr-3 py-1.5 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-amber-500"
+            />
+          </div>
+        </div>
+
+        {filteredVotes.length === 0 ? (
+          <div className="text-center py-8 text-slate-400 text-xs">
+            ไม่พบประวัติการโหวตที่ตรงกับคำค้นหา
+          </div>
+        ) : (
+          <div className="space-y-2.5 max-h-[380px] overflow-y-auto pr-1">
+            {filteredVotes.map((v) => {
+              const candidateObj = candidates.find((c) => c.id === v.candidateId);
+              const scores = v.scores || {};
+              const scoreValues = Object.values(scores);
+              const totalScore = scoreValues.reduce((acc, curr) => acc + curr, 0);
+              const isExpanded = expandedVoteId === v.id;
+
+              return (
+                <div
+                  key={v.id}
+                  className="bg-slate-950/80 border border-slate-800 rounded-2xl p-4 space-y-3"
+                >
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                    <div className="flex items-center gap-3">
+                      {/* eslint-disable-next-line @next/next/no-img-element */}
+                      <img
+                        src={candidateObj?.avatarUrl || `https://api.dicebear.com/7.x/personas/svg?seed=${v.candidateId}`}
+                        alt={candidateObj?.name || "Player"}
+                        onError={(e) => {
+                          (e.target as HTMLImageElement).src = `https://api.dicebear.com/7.x/personas/svg?seed=${v.candidateId}`;
+                        }}
+                        className="w-11 h-11 rounded-xl object-cover ring-1 ring-slate-700 shrink-0"
+                      />
+                      <div>
+                        <div className="text-xs font-bold text-white flex items-center gap-2">
+                          <span className="text-cyan-400 font-extrabold">{v.userEmail}</span>
+                          <span>โหวตให้</span>
+                          <span className="text-amber-400 font-extrabold">{candidateObj?.name || v.candidateId}</span>
+                        </div>
+                        <div className="text-[10px] text-slate-400 mt-0.5">
+                          เมื่อ: {formatThaiDateTime(v.submittedAt)}
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="flex items-center gap-3">
+                      <div className="text-right">
+                        <span className="text-[10px] text-slate-400 block">คะแนนรวมที่ให้</span>
+                        <span className="text-base font-black text-amber-400">{totalScore} <span className="text-xs text-slate-400 font-normal">/ 180</span></span>
+                      </div>
+
+                      <button
+                        onClick={() => setExpandedVoteId(isExpanded ? null : v.id)}
+                        className="px-3 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-xs font-semibold text-slate-200 flex items-center gap-1"
+                      >
+                        <Eye className="w-3.5 h-3.5" />
+                        <span>{isExpanded ? "ซ่อนรายละเอียด" : "ดูทั้ง 36 ข้อ"}</span>
+                      </button>
+                    </div>
+                  </div>
+
+                  {/* Expanded 36 Criteria Scores Detail */}
+                  {isExpanded && (
+                    <div className="pt-3 border-t border-slate-800/80 animate-in fade-in duration-150">
+                      <div className="text-xs font-bold text-slate-300 mb-2">คะแนนรายข้อย่อย (36 ข้อ):</div>
+                      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2">
+                        {ALL_SUB_CRITERIA.map((sub, idx) => {
+                          const pts = scores[sub.id] || 0;
+                          return (
+                            <div
+                              key={sub.id}
+                              className="p-2 rounded-xl bg-slate-900 border border-slate-800 flex items-center justify-between text-[11px]"
+                            >
+                              <span className="text-slate-300 truncate max-w-[180px]">
+                                {idx + 1}. {sub.nameTh}
+                              </span>
+                              <span className="font-bold text-amber-400 shrink-0 ml-1">
+                                {pts} คะแนน
+                              </span>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  )}
+                </div>
+              );
+            })}
+          </div>
+        )}
+      </div>
+
+      {/* Section 3: Voting Passcode Settings */}
       <div className="glass-panel p-6 rounded-3xl border border-amber-500/30 bg-gradient-to-b from-amber-500/5 to-slate-900/40 space-y-4">
         <div className="flex items-center gap-2.5 pb-2 border-b border-slate-800">
           <KeyRound className="w-5 h-5 text-amber-400" />
           <h2 className="text-base sm:text-lg font-bold text-white">
-            2. รหัสผ่านสำหรับการโหวต (Voting Passcode)
+            3. รหัสผ่านสำหรับการโหวต (Voting Passcode)
           </h2>
         </div>
 
@@ -556,7 +636,7 @@ export default function AdminPage() {
         </div>
       </div>
 
-      {/* Section 3: Custom Voting Restrictions Matrix (ใครห้ามโหวตใคร) */}
+      {/* Section 4: Custom Voting Restrictions Matrix (ใครห้ามโหวตใคร) */}
       <div className="glass-panel p-6 rounded-3xl border border-rose-500/30 bg-gradient-to-b from-rose-500/5 to-slate-900/40 space-y-5 shadow-2xl">
         <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 pb-3 border-b border-slate-800">
           <div className="flex items-center gap-2.5">
@@ -565,7 +645,7 @@ export default function AdminPage() {
             </div>
             <div>
               <h2 className="text-base sm:text-lg font-bold text-white">
-                3. กำหนดสิทธิ์: ใครห้ามโหวตใคร (Custom Voting Restrictions)
+                4. กำหนดสิทธิ์: ใครห้ามโหวตใคร (Custom Voting Restrictions)
               </h2>
               <p className="text-xs text-slate-400">
                 คลิกเลือกผู้โหวต และติ๊กเลือกนักเตะที่ผู้โหวตคนนั้น <strong>"ห้ามโหวต"</strong>
@@ -667,6 +747,9 @@ export default function AdminPage() {
                       <img
                         src={cand.avatarUrl}
                         alt={cand.name}
+                        onError={(e) => {
+                          (e.target as HTMLImageElement).src = `https://api.dicebear.com/7.x/personas/svg?seed=${cand.id}`;
+                        }}
                         className="w-8 h-8 rounded-lg object-cover ring-1 ring-slate-700 shrink-0"
                       />
                       <div className="min-w-0">
@@ -696,14 +779,14 @@ export default function AdminPage() {
         </div>
       </div>
 
-      {/* Section 4: Account Approval & Account Banning System (ระบบบล็อคและแบนแอคเคาน์) */}
+      {/* Section 5: Account Approval & Account Banning System */}
       <div className="glass-panel p-6 rounded-3xl border border-slate-800 space-y-4">
         <div className="flex items-center justify-between pb-3 border-b border-slate-800">
           <div className="flex items-center gap-2.5">
             <UserCheck className="w-5 h-5 text-emerald-400" />
             <div>
               <h2 className="text-base sm:text-lg font-bold text-white">
-                4. อนุมัติและบล็อคบัญชีผู้ใช้ / แบนแอคเคาน์ ({userList.length} บัญชี)
+                5. อนุมัติและบล็อคบัญชีผู้ใช้ / แบนแอคเคาน์ ({userList.length} บัญชี)
               </h2>
               <p className="text-xs text-slate-400">อนุมัติสิทธิ์ หรือแบนบัญชีไม่ให้เข้าใช้งานเว็บ</p>
             </div>
@@ -733,6 +816,7 @@ export default function AdminPage() {
                   <div className="min-w-0">
                     <div className="text-xs font-bold text-white truncate flex items-center gap-1.5">
                       <span>{u.name}</span>
+                      {u.number && <span className="text-amber-400 font-extrabold">#{u.number}</span>}
                       {isUAdmin && (
                         <span className="text-[10px] px-1.5 py-0.2 rounded bg-amber-500/20 text-amber-300 font-bold border border-amber-500/30">
                           แอดมิน
@@ -777,14 +861,14 @@ export default function AdminPage() {
         </div>
       </div>
 
-      {/* Section 5: Player Management */}
+      {/* Section 6: Player Management */}
       <div className="glass-panel p-6 rounded-3xl border border-slate-800 space-y-5">
         <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 pb-3 border-b border-slate-800">
           <div className="flex items-center gap-2.5">
             <Users className="w-5 h-5 text-rose-400" />
             <div>
               <h2 className="text-base sm:text-lg font-bold text-white">
-                5. จัดการรายชื่อนักเตะ ({candidates.length} คน)
+                6. จัดการรายชื่อนักเตะ ({candidates.length} คน)
               </h2>
               <p className="text-xs text-slate-400">เพิ่ม, แก้ไข, ลบ หรือปรับแต่งรูปภาพและข้อมูลนักเตะ</p>
             </div>
@@ -816,6 +900,9 @@ export default function AdminPage() {
                   <img
                     src={cand.avatarUrl}
                     alt={cand.name}
+                    onError={(e) => {
+                      (e.target as HTMLImageElement).src = `https://api.dicebear.com/7.x/personas/svg?seed=${cand.id}`;
+                    }}
                     className="w-12 h-12 rounded-xl object-cover ring-1 ring-slate-700 shrink-0"
                   />
                   <div className="min-w-0">
@@ -858,13 +945,13 @@ export default function AdminPage() {
         </div>
       </div>
 
-      {/* Section 6: Hard Reset & Complete Database Reset */}
+      {/* Section 7: Hard Reset */}
       <div className="glass-panel p-6 rounded-3xl border border-red-500/40 bg-gradient-to-b from-red-500/10 to-slate-900/50 space-y-4">
         <div className="flex items-center gap-2.5 pb-3 border-b border-slate-800">
           <Flame className="w-5 h-5 text-red-500" />
           <div>
             <h2 className="text-base sm:text-lg font-bold text-white">
-              6. เคลียร์ข้อมูลและรีเซ็ตเว็บกลับไปค่าเริ่มต้น (Hard Reset)
+              7. เคลียร์ข้อมูลและรีเซ็ตเว็บกลับไปค่าเริ่มต้น (Hard Reset)
             </h2>
             <p className="text-xs text-slate-400">ล้างผลโหวต ข้อมูลเก่า และกติกาเดิมทั้งหมดทิ้ง เพื่อเริ่มนับใหม่</p>
           </div>
